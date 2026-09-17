@@ -2,7 +2,7 @@ import { mkdir, readdir, copyFile, writeFile, readFile, stat, rm } from 'node:fs
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { site } from '../src/content.mjs';
-import { render } from '../src/render.mjs';
+import { renderLead } from '../src/lead.mjs';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const dist = path.join(root, 'dist');
@@ -30,12 +30,15 @@ export async function build() {
   await rm(dist, { recursive: true, force: true });
   await mkdir(dist, { recursive: true });
   await copyDir(path.join(root, 'public'), dist);
-  await Promise.all(['styles.css', 'main.js', 'icons.mjs'].map(name => copyFile(path.join(root, 'src', name), path.join(dist, name))));
-  await writeFile(path.join(dist, 'styles.css'), `${await readFile(path.join(root,'src/styles.css'),'utf8')}\n${await readFile(path.join(root,'src/refinements.css'),'utf8')}\n.portrait-image{object-position:${site.portrait.position.replace(/[^0-9.% a-z-]/g,'')}}`);
-  await writeFile(path.join(dist, 'index.html'), render(site, assets), 'utf8');
+  await copyFile(path.join(root, 'src', 'live-styles.css'), path.join(dist, 'styles.css'));
+  await copyFile(path.join(root, 'src', 'live-main.js'), path.join(dist, 'main.js'));
+  await copyFile(path.join(root, 'src', 'lead.css'), path.join(dist, 'lead.css'));
+  await writeFile(path.join(dist, 'index.html'), await readFile(path.join(root, 'src', 'live-index.html'), 'utf8'), 'utf8');
+  await mkdir(path.join(dist, 'hablemos'), { recursive: true });
+  await writeFile(path.join(dist, 'hablemos', 'index.html'), renderLead(site), 'utf8');
   const url = site.url.replace(/\/$/, '');
   await writeFile(path.join(dist, 'robots.txt'), `User-agent: *\nAllow: /\n${url ? `Sitemap: ${url}/sitemap.xml\n` : ''}`);
-  if (url) await writeFile(path.join(dist, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${url}/</loc></url></urlset>`);
+  if (url) await writeFile(path.join(dist, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${url}/</loc></url><url><loc>${url}/hablemos/</loc></url></urlset>`);
   await writeFile(path.join(dist, '404.html'), '<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Página no encontrada | Adri</title><link rel="stylesheet" href="/styles.css"><main class="wrap about"><h1>Esta historia no está aquí.</h1><a class="text-link" href="/">Volver al portfolio de Adri</a></main></html>');
   console.log(`Portfolio generado en dist. Foto: ${assets[site.portrait.src] ? 'lista' : 'pendiente'}. Videos: ${site.work.pieces.filter(p => assets[p.video]).length}/3.`);
 }

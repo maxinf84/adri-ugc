@@ -40,7 +40,7 @@ export const site = {
   instagram: '@maternidadconadri',
   instagramUrl: 'https://instagram.com/maternidadconadri',
   driveUrl: 'https://drive.google.com',
-  url: '',
+  url: 'https://maternidadconadri.com',
   title: 'Adriana Seijas | Creadora UGC & Comunicadora — Ciudad de México',
   description: 'Creadora de contenido UGC y comunicadora en Ciudad de México. Especializada en maternidad, bienestar y vida familiar. Videos auténticos que conectan con familias y generan confianza.',
   portrait: {
